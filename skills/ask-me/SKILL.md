@@ -36,8 +36,8 @@ disable-model-invocation: true
 
 ### Step 2: 提出1-3个问题（每轮）
 
-基于当前的理解程度，提出最有价值的 **不超过3个** 问题。
-一次性展示过多问题会让人感到困惑和压力。
+基于当前的理解程度，使用 `AskUserQuestion` 工具提出最有价值的 **不超过3个** 问题。
+一次性展示过多问题会让人感到困惑和压力。`AskUserQuestion` 的 `questions` 数组支持同时提交1-4个问题，每轮最多使用3个。
 
 **提问原则：**
 
@@ -45,12 +45,12 @@ disable-model-invocation: true
   - ❌ "您的需求是什么？"
   - ✅ "这个导出功能你希望输出 CSV 还是 Excel 格式？"
 
-- **提供选项而非开放题**：尽量给出明确选项让用户选择
+- **提供选项而非开放题**：尽量给出明确选项让用户选择。利用 `AskUserQuestion` 的 `options` 字段提供互斥选项，精简描述即可让用户快速决策
   - ❌ "你想怎么处理错误？"
-  - ✅ "错误处理上，你想直接跳过错误的行继续处理，还是遇到第一个错误就停止？"
+  - ✅ `AskUserQuestion` 调用时，`options` 设置为 `[{label: "跳过错误行继续", description: "记录错误日志不影响后续导入"}, {label: "遇到错误立即停止", description: "确保数据完整性"}]`
 
-- **解释"为什么问"**：简短说明这个问题为什么重要
-  - ✅ "我想确认一下：这个导出是针对当前筛选结果，还是数据库中全部数据？因为这会影响到查询写法和执行时间。"
+- **解释"为什么问"**：在 `question` 字段中简短说明这个问题为什么重要
+  - ✅ `question` 设置为："导出格式你希望用 CSV 还是 Excel？CSV 通用性好，Excel 支持多Sheet和格式。"
 
 - **聚焦关键决策**：只问那些真正影响方案设计和实现方向的问题
   - 不要问可以通过查代码库自行确认的信息
@@ -58,14 +58,16 @@ disable-model-invocation: true
 
 - **优先级排序**：把当前最重要的1-3个问题放在最前面。如果还有什么想确认的但优先级不高，留到下一轮再问。
 
+- **必须使用 AskUserQuestion 工具**：所有向用户提出的问题都必须通过 `AskUserQuestion` 工具提交，不得直接在文本中提问。利用其结构化能力（`question`、`options`、`multiSelect` 等字段）让用户高效决策。
+
 ### Step 3: 等待回答并评估
 
-用户回答当前轮次的问题后：
+用户回答当前轮次的问题后（`AskUserQuestion` 工具会返回用户的答案）：
 
-1. **消化回答**：理解用户的选择和偏好
+1. **消化回答**：理解用户的选择和偏好，从 `answers` 中提取用户的选项或自定义输入
 2. **评估状态**：目前的认知还有没有明显的歧义或未确认的决策点？
 3. **决定下一步**：
-   - **仍有歧义** → 回到 Step 2，提出下一轮的1-3个问题
+   - **仍有歧义** → 回到 Step 2，使用 `AskUserQuestion` 提出下一轮的1-3个问题
    - **已无歧义** → 进入 Step 4
 
 注意：即使你已经有了5个问题想问，也必须拆成多轮，每轮最多3个。
@@ -92,17 +94,42 @@ disable-model-invocation: true
 ```
 用户: /ask-me 我想给后台加个导入用户的功能
 
-AI: 好的，先确认几个关键点：
+AI: 调用 AskUserQuestion 工具，提交两个问题：
+    [
+      {
+        question: "导入的文件格式是 CSV 还是 Excel？这决定我用哪个解析库。",
+        header: "文件格式",
+        options: [{label: "CSV"}, {label: "Excel"}],
+        multiSelect: false
+      },
+      {
+        question: "发现有重复用户（如相同邮箱），如何处理？",
+        header: "重复处理",
+        options: [
+          {label: "跳过重复", description: "记录日志继续导入"},
+          {label: "覆盖更新", description: "新数据替换旧数据"},
+          {label: "报错停止", description: "遇到重复立即中断"}
+        ],
+        multiSelect: false
+      }
+    ]
 
-1. "导入的文件格式是 CSV 还是 Excel？这决定我用哪个解析库。"
-2. "导入时发现有重复用户（比如相同的邮箱），是跳过、覆盖、还是报错？"
+用户: (选择 CSV 和 跳过重复)
 
-用户: CSV，重复的跳过，记录日志
+AI: 调用 AskUserQuestion 工具，再问一个问题：
+    [
+      {
+        question: "导入的用户需要分配到某个部门吗？还是在全局用户池？",
+        header: "部门归属",
+        options: [
+          {label: "指定部门", description: "CSV 中包含 department_id 列"},
+          {label: "全局用户池", description: "不分配部门"}
+        ],
+        multiSelect: false
+      }
+    ]
 
-AI: 好，那还有一个问题：
-     "这些要导入的用户需要分配到某个部门吗？还是一个全局的用户池？"
-
-用户: 需要选择部门，在 CSV 里加一列 department_id
+用户: (选择"指定部门")
 
 AI: 明白了。确认我的理解：
     • 格式：CSV
