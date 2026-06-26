@@ -126,7 +126,16 @@ docs(readme): 更新安装说明
 
 3. **生成 description**：通览 diff 后归纳总结，同时参考会话上下文中用户对此次变更的描述。如果变更涉及多个维度，以主要变动为准；如果范围刚好涵盖一个完整功能，可以用更抽象的表述。
 
+   **语言要求**：
+   - description 必须使用**中文**书写，表意清晰自然
+   - 保留专业术语、技术名词、类名/变量名、框架名、协议名等为**英文**（如 `JWT`、`VO`、`DTO`、`Redis`、`MySQL`、`PetProductBehavioralSaveVo` 等）
+   - 避免中英混写日常词汇（如不要写"新增 delete 功能"，应写"新增删除功能"），纯技术名词才保留英文
+   - 示例对比：
+     - ❌ `fix(mall-single): add missing PetProductBehavioralSaveVo and FlashPromotionLogSaveVo`
+     - ✅ `fix(mall-single): 增加缺失的 PetProductBehavioralSaveVo 和 FlashPromotionLogSaveVo`
+
 4. **生成 body（可选）**：当变更需要额外背景说明时补充。此时会话上下文特别有价值——用户可能在对话中解释了技术选型的原因、修复方法的思路、或者功能的约束条件。将这些"为什么"写进 body，让提交信息具备完整的可追溯性。
+   - body 同样使用**中文**书写，技术名词保留英文
 
 5. **生成 footer（可选）**：检测到 BREAKING CHANGE 时自动添加 `BREAKING CHANGE:` footer。如果会话中提到关联的 Issue 或任务编号，自动添加 `Closes #xxx`。
 
