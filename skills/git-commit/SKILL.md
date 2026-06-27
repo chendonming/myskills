@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: 按照约定式提交规范自动提交Git代码，无需用户确认
+description: 按照约定式提交规范自动提交Git代码并以 rebase 方式推送，无需用户确认
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,7 @@ disable-model-invocation: true
 
 按照 [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) 规范自动提交 Git 代码。
 
-AI 自行分析变更内容、结合当前会话上下文理解变更意图，生成规范的提交信息并自动提交。
+AI 自行分析变更内容、结合当前会话上下文理解变更意图，生成规范的提交信息并自动提交。提交后以 rebase 方式变基到远程最新代码之上，再自动推送到远程仓库，确保提交历史线性美观。
 
 此技能仅在用户主动输入 `/git-commit` 时触发，不会自动调用。
 
@@ -139,11 +139,15 @@ docs(readme): 更新安装说明
 
 5. **生成 footer（可选）**：检测到 BREAKING CHANGE 时自动添加 `BREAKING CHANGE:` footer。如果会话中提到关联的 Issue 或任务编号，自动添加 `Closes #xxx`。
 
-### Step 4: 自动提交
+### Step 4: 自动提交并推送
 
 生成提交信息后，直接执行 `git commit`。提交完成后展示提交摘要（commit hash、变更摘要）。
 
-**不执行 `git push`**。
+随后按顺序自动执行（确保提交历史线性美观）：
+
+1. **`git pull --rebase`** — 将本地提交变基到远程最新代码之上，避免产生 merge 提交，保持 Git 历史线性
+   - 若产生冲突，AI 应分析冲突内容并尝试自动解决；无法自动解决的，展示冲突文件并提示用户手动处理
+2. **`git push`** — 自动推送到当前分支的远程仓库
 
 ## 关键提醒
 
@@ -151,7 +155,7 @@ docs(readme): 更新安装说明
 - **自动提交流程**：AI 分析完后直接生成提交信息并执行 `git commit`，无需用户确认
 - **会话上下文是核心输入**：不要只看 diff，当前会话中用户和 AI 的对话是理解变更意图的关键来源。如果 diff 内容很少但对话中讨论了很多，提交信息应以对话中的完整背景为准
 - **diff + 会话 = 完整图景**：diff 展示"改了什么"，会话展示"为什么改"和"怎么想到这样改"。body 部分是承载"为什么"的最佳位置
-- **只 commit 不 push**：只执行 `git commit`，不要执行 `git push`
+- **自动提交 + rebase + push**：AI 依次执行 `git commit` → `git pull --rebase` → `git push`，全程自动化。若 rebase 产生冲突，AI 尝试自动解决，无法自动解决时展示冲突文件提示用户
 - **不要用 `git commit -a`**：只提交暂存区内容（或用户明确指定的文件）
 - **多行提交信息**：body 有多行时使用 heredoc 方式提交
 - **会话可能为空**：如果当前会话没有历史消息（例如新会话直接输入 `/git-commit`），则只依赖 diff 分析，按原有逻辑处理
