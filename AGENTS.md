@@ -14,13 +14,11 @@
 .
 ├── AGENTS.md
 ├── README.md
-├── skills/                  # 用户自制的技能（主要目录）
+├── skills/                  # 技能目录（用户自制 + 手动管理的技能）
+│   ├── skill-creator/
 │   ├── git-commit/
-│   │   └── SKILL.md
 │   └── technical-decision-document-generator/
-│       └── SKILL.md
 └── .reasonix/skills/        # 内置技能（不要手动修改）
-    └── skill-creator/
         ├── SKILL.md
         ├── agents/          # 子代理提示
         ├── scripts/         # Python 评测脚本

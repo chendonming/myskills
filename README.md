@@ -6,6 +6,7 @@
 
 | 名称 | 描述 |
 |------|------|
+| [skill-creator](./skills/skill-creator/SKILL.md) | 创建、修改和优化技能，并评估技能性能 |
 | [git-commit](./skills/git-commit/SKILL.md) | 按照约定式提交规范自动提交 Git 代码并以 rebase 方式推送，无需用户确认 |
 | [technical-decision-document-generator](./skills/technical-decision-document-generator/SKILL.md) | 生成可审计的技术决策文档，涵盖架构决策、工程权衡、实现选择和技术调研 |
 
@@ -50,8 +51,7 @@ description: 简短描述（≤120 字符）
 .
 ├── README.md
 └── skills/
+    ├── skill-creator/
     ├── git-commit/
-    │   └── SKILL.md
     └── technical-decision-document-generator/
-        └── SKILL.md
 ```
